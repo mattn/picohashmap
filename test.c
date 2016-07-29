@@ -9,18 +9,18 @@ typedef struct {
 
 int
 main() {
-  HMAP *m = hm_create(10, NULL);
+  PHMAP *m = phm_create(10, NULL);
 
-  hm_put(m, "foo", 3, "hello");
-  hm_put(m, "bar", 3, "world");
-  hm_put(m, "blah", 4, "picomap");
+  phm_put(m, "foo", 3, "hello");
+  phm_put(m, "bar", 3, "world");
+  phm_put(m, "blah", 4, "picomap");
 
 #define TEST_NULL(expr) do { \
-    ok(!hm_get(m, expr, strlen(expr))); \
+    ok(!phm_get(m, expr, strlen(expr))); \
   } while (0);
 
 #define TEST(expr, expected) do { \
-    void *e = hm_get(m, expr, strlen(expr)); \
+    void *e = phm_get(m, expr, strlen(expr)); \
     ok(!strcmp((char*)e, expected)); \
   } while (0);
 
@@ -34,23 +34,23 @@ main() {
 #undef TEST
 #undef TEST_NULL
 
-  hm_free(m);
+  phm_free(m);
 
   key_int k;
-  m = hm_create(10, NULL);
+  m = phm_create(10, NULL);
 
-  k.v = 1; hm_put(m, &k.v, sizeof(k.v), "new");
-  k.v = 2; hm_put(m, &k.v, sizeof(k.v), "york");
-  k.v = 3; hm_put(m, &k.v, sizeof(k.v), "city");
+  k.v = 1; phm_put(m, &k.v, sizeof(k.v), "new");
+  k.v = 2; phm_put(m, &k.v, sizeof(k.v), "york");
+  k.v = 3; phm_put(m, &k.v, sizeof(k.v), "city");
 
 #define TEST_NULL(expr) do { \
     key_int k = {(int)expr}; \
-    ok(!hm_get(m, &k.v, sizeof(expr))); \
+    ok(!phm_get(m, &k.v, sizeof(expr))); \
   } while (0);
 
 #define TEST(expr, expected) do { \
     key_int k = {(int)expr}; \
-    void *e = hm_get(m, &k.v, sizeof(k.v)); \
+    void *e = phm_get(m, &k.v, sizeof(k.v)); \
     ok(!strcmp((char*)e, expected)); \
   } while (0);
 
@@ -58,13 +58,13 @@ main() {
   TEST(3, "city");
   TEST(1, "new");
   TEST_NULL((intptr_t)"1bar");
-  TEST_NULL(3);
+  TEST_NULL(4);
   TEST_NULL('2');
 
 #undef TEST
 #undef TEST_NULL
 
-  hm_free(m);
+  phm_free(m);
 }
 
 /* vim:set et sw=2 cino=>2,\:0: */

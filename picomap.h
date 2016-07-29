@@ -10,8 +10,8 @@ extern "C" {
 #include <stdlib.h>
 #include <memory.h>
 
-typedef int (*f_hm_compare)(void*, void*);
-typedef void (*f_hm_each)(void*, void*);
+typedef int (*f_phm_compare)(void*, void*);
+typedef void (*f_phm_each)(void*, void*);
 
 typedef struct _HENT HENT;
 
@@ -26,8 +26,8 @@ typedef struct {
   HENT **b;
   size_t c;
   size_t s;
-  f_hm_compare f;
-} HMAP;
+  f_phm_compare f;
+} PHMAP;
 
 static int
 bytes_eq(void* lhs, void *rhs) {
@@ -45,18 +45,18 @@ hash(uint8_t *b, size_t l) {
 }
 
 static size_t
-hm_index(size_t c, uint64_t h) {
+phm_index(size_t c, uint64_t h) {
   return ((size_t) h) & (c - 1);
 }
 
 static int
-hm_eq(void* ka, uint64_t ha, void* kb, uint64_t hb) {
+phm_eq(void* ka, uint64_t ha, void* kb, uint64_t hb) {
   if (ka == kb) return 1;
   return ha == hb;
 }
 
 static void
-hm_expand(HMAP* m) {
+phm_expand(PHMAP* m) {
   if (m->s <= (m->c * 3 / 4)) return;
   size_t i;
   size_t c = m->c << 1;
@@ -66,7 +66,7 @@ hm_expand(HMAP* m) {
     HENT* e = m->b[i];
     while (e) {
       HENT* n = e->n;
-      size_t p = hm_index(c, e->h);
+      size_t p = phm_index(c, e->h);
       e->n = b[p];
       b[p] = e;
       e = n;
@@ -77,9 +77,9 @@ hm_expand(HMAP* m) {
   m->c = c;
 }
 
-HMAP*
-hm_create(size_t cap, f_hm_compare f) {
-  HMAP *m = malloc(sizeof(HMAP));
+PHMAP*
+phm_create(size_t cap, f_phm_compare f) {
+  PHMAP *m = malloc(sizeof(PHMAP));
   if (!m) return NULL;
   m->c = 1;
   while (m->c <= cap) m->c <<= 1;
@@ -94,7 +94,7 @@ hm_create(size_t cap, f_hm_compare f) {
 }
 
 void
-hm_free(HMAP* m) {
+phm_free(PHMAP* m) {
   size_t i;
   for (i = 0; i < m->c; i++) {
     HENT *e = m->b[i];
@@ -125,7 +125,7 @@ he_create(void *k, size_t s, uint64_t h, void *v) {
 }
 
 void*
-hm_put(HMAP *m, void *k, size_t s, void *v) {
+phm_put(PHMAP *m, void *k, size_t s, void *v) {
   uint64_t h = hash(k, s);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT **p = &(m->b[i]);
@@ -135,10 +135,10 @@ hm_put(HMAP *m, void *k, size_t s, void *v) {
       *p = he_create(k, s, h, v);
       if (!*p) return NULL;
       m->s++;
-      hm_expand(m);
+      phm_expand(m);
       return NULL;
     }
-    if (hm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
+    if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
       void *old = cur->v;
       cur->v = v;
       return old;
@@ -149,26 +149,26 @@ hm_put(HMAP *m, void *k, size_t s, void *v) {
 }
 
 void*
-hm_get(HMAP *m, void *k, size_t s) {
+phm_get(PHMAP *m, void *k, size_t s) {
   uint64_t h = hash(k, s);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT *e = m->b[i];
   while (e) {
-    if (hm_eq(e->k, e->h, k, h) || m->f(e->k, k)) return e->v;
+    if (phm_eq(e->k, e->h, k, h) || m->f(e->k, k)) return e->v;
     e = e->n;
   }
   return NULL;
 }
 
 int
-hm_has_key(HMAP* m, void* k, size_t s) {
+phm_has_key(PHMAP* m, void* k, size_t s) {
   int h = hash(k, s);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT** p = &(m->b[i]);
   HENT* cur;
   while (*p) {
     cur = *p;
-    if (hm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k))
+    if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k))
       return 1;
     p = &cur->n;
   }
@@ -176,14 +176,14 @@ hm_has_key(HMAP* m, void* k, size_t s) {
 }
 
 void*
-hm_del(HMAP* m, void* k, size_t s) {
+phm_del(PHMAP* m, void* k, size_t s) {
   int h = hash(k, s);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT** p = &(m->b[i]);
   HENT* cur;
   while (*p) {
     cur = *p;
-    if (hm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
+    if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
       void* v = cur->v;
       *p = cur->n;
       free(cur);
@@ -196,7 +196,7 @@ hm_del(HMAP* m, void* k, size_t s) {
 }
 
 void*
-hm_each(HMAP* m, f_hm_each f) {
+phm_each(PHMAP* m, f_phm_each f) {
   size_t i;
   for (i = 0; i < m->c; i++) {
     HENT *e = m->b[i];
