@@ -100,7 +100,6 @@ phm_free(PHMAP* m) {
     HENT *e = m->b[i];
     while (e) {
       HENT *n = e->n;
-      free(e->k);
       free(e);
       e = n;
     }
@@ -113,12 +112,7 @@ static HENT*
 he_create(void *k, size_t s, uint64_t h, void *v) {
   HENT *e = malloc(sizeof(HENT));
   if (!e) return NULL;
-  e->k = malloc(s);
-  if (!e->k) {
-    free(e);
-    return NULL;
-  }
-  memcpy(e->k, k, s);
+  e->k = k;
   e->h = h;
   e->v = v;
   return e;
@@ -176,7 +170,7 @@ phm_has_key(PHMAP* m, void* k, size_t s) {
 }
 
 void*
-phm_del(PHMAP* m, void* k, size_t s) {
+phm_delete(PHMAP* m, void* k, size_t s) {
   int h = hash(k, s);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT** p = &(m->b[i]);
