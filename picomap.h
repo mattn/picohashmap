@@ -100,6 +100,7 @@ phm_free(PHMAP* m) {
     HENT *e = m->b[i];
     while (e) {
       HENT *n = e->n;
+      free(e->k);
       free(e);
       e = n;
     }
@@ -109,12 +110,18 @@ phm_free(PHMAP* m) {
 }
 
 static HENT*
-he_create(void *k, size_t s, uint64_t h, void *v) {
+phe_create(void *k, size_t s, uint64_t h, void *v) {
   HENT *e = malloc(sizeof(HENT));
   if (!e) return NULL;
-  e->k = k;
+  e->k = malloc(s);
+  if (!e->k) {
+    free(e);
+    return NULL;
+  }
+  memcpy(e->k, k, s);
   e->h = h;
   e->v = v;
+  e->n = NULL;
   return e;
 }
 
@@ -126,7 +133,7 @@ phm_put(PHMAP *m, void *k, size_t s, void *v) {
   while (1) {
     HENT *cur = *p;
     if (!cur) {
-      *p = he_create(k, s, h, v);
+      *p = phe_create(k, s, h, v);
       if (!*p) return NULL;
       m->s++;
       phm_expand(m);

@@ -7,7 +7,7 @@ test: test-core
 	./test-core
 
 test-core: picomap.h test.c picotest/picotest.c picotest/picotest.h
-	$(CC) -Wall test.c picotest/picotest.c -o $@
+	$(CC) -g -Wall test.c picotest/picotest.c -o $@
 
 clean:
 	rm -f test-core
