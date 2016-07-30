@@ -5,7 +5,7 @@
 
 int
 main() {
-  PHMAP *m = phm_create(10, NULL);
+  PHMAP *m = phm_create(10);
 
   phm_put(m, PHM_CSTR("foo"),  PHM_CSTR("hello"));
   phm_put(m, PHM_CSTR("bar"),  PHM_CSTR("world"));
@@ -43,7 +43,7 @@ main() {
   phm_free(m);
 
   int k;
-  m = phm_create(10, NULL);
+  m = phm_create(10);
 
   k = 1; phm_put(m, PHM_MEM(&k), PHM_CSTR("new"));
   k = 2; phm_put(m, PHM_MEM(&k), PHM_CSTR("york"));

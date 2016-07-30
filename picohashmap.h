@@ -10,19 +10,44 @@ extern "C" {
 #include <stdlib.h>
 #include <memory.h>
 
+#ifndef kcalloc
+# define kcalloc(N,Z) calloc(N,Z)
+#endif
+#ifndef kmalloc
+# define kmalloc(Z) malloc(Z)
+#endif
+#ifndef krealloc
+# define krealloc(P,Z) realloc(P,Z)
+#endif
+#ifndef kfree
+# define kfree(P) free(P)
+#endif
+
 #define PHM_MEM(k) k, (sizeof(k))
 #define PHM_CSTR(k) k, (sizeof(k))
 #define PHM_STR(k) k, (strlen(k))
+
+#ifdef PICOHASHMAP_USE_EQUALFUNC
+# define PHM_EQUALS(m,k1,k2) m->f(k1, k2)
+#else
+# define PHM_EQUALS(m,k1,k2) 0
+#endif
 
 typedef int (*f_phm_compare)(void*, void*);
 typedef void (*f_phm_each)(void*, void*);
 
 typedef struct _HENT HENT;
 
+#ifdef PICOHASHMAP_USE_64BIT_HASH
+typedef uint64_t phm_int_t;
+#else
+typedef uint32_t phm_int_t;
+#endif
+
 struct _HENT {
   void *k;
   void *v;
-  uint64_t h;
+  phm_int_t h;
   HENT *n;
 };
 
@@ -33,28 +58,34 @@ typedef struct {
   f_phm_compare f;
 } PHMAP;
 
-static int
+static inline int
 bytes_eq(void* lhs, void *rhs) {
   return *(uint8_t*)lhs == *(uint8_t*)rhs;
 }
 
-static uint64_t
+static inline phm_int_t
 hash(uint8_t *b, size_t l) {
-  uint64_t h;
+  phm_int_t h;
   size_t i;
+#ifdef PICOHASHMAP_USE_64BIT_HASH
   h = 14695981039346656037U;
   for (i = 0; i < l; ++i)
     h = (1099511628211LLU * h) ^ (b[i]);
+#else
+  h = 2166136261U;
+  for (i = 0; i < l; ++i)
+    h = (16777619U * h) ^ (b[i]);
+#endif
   return h;
 }
 
-static size_t
-phm_index(size_t c, uint64_t h) {
+static inline size_t
+phm_index(size_t c, phm_int_t h) {
   return ((size_t) h) & (c - 1);
 }
 
-static int
-phm_eq(void* ka, uint64_t ha, void* kb, uint64_t hb) {
+static inline int
+phm_eq(void* ka, phm_int_t ha, void* kb, phm_int_t hb) {
   if (ka == kb) return 1;
   return ha == hb;
 }
@@ -64,12 +95,12 @@ phm_size(PHMAP *m) {
   return m->s;
 }
 
-static void
+static inline void
 phm_expand(PHMAP* m) {
   if (m->s <= (m->c * 3 / 4)) return;
   size_t i;
   size_t c = m->c << 1;
-  HENT** b = calloc(c, sizeof(HENT*));
+  HENT** b = kcalloc(c, sizeof(HENT*));
   if (!b) return;
   for (i = 0; i < m->c; i++) {
     HENT* e = m->b[i];
@@ -81,24 +112,42 @@ phm_expand(PHMAP* m) {
       e = n;
     }
   }
-  free(m->b);
+  kfree(m->b);
   m->b = b;
   m->c = c;
 }
 
+#ifdef PICOHASHMAP_USE_EQUALFUNC
 PHMAP*
-phm_create(size_t cap, f_phm_compare f) {
-  PHMAP *m = malloc(sizeof(PHMAP));
+phm_create_with_compare(size_t cap, f_phm_compare f) {
+  PHMAP *m = kmalloc(sizeof(PHMAP));
   if (!m) return NULL;
   m->c = 1;
   while (m->c <= cap) m->c <<= 1;
-  m->b = calloc(m->c, sizeof(HENT*));
+  m->b = kcalloc(m->c, sizeof(HENT*));
   if (!m->b) {
-    free(m);
+    kfree(m);
     return NULL;
   }
   m->s = 0;
   m->f = f ? f : bytes_eq;
+  return m;
+}
+#endif
+
+PHMAP*
+phm_create(size_t cap) {
+  PHMAP *m = kmalloc(sizeof(PHMAP));
+  if (!m) return NULL;
+  m->c = 1;
+  while (m->c <= cap) m->c <<= 1;
+  m->b = kcalloc(m->c, sizeof(HENT*));
+  if (!m->b) {
+    kfree(m);
+    return NULL;
+  }
+  m->s = 0;
+  m->f = bytes_eq;
   return m;
 }
 
@@ -110,33 +159,33 @@ phm_free(PHMAP* m) {
     while (e) {
       HENT *n = e->n;
 #ifdef PICOHASHMAP_USE_COPY
-      free(e->k);
-      free(e->v);
+      kfree(e->k);
+      kfree(e->v);
 #endif
-      free(e);
+      kfree(e);
       e = n;
     }
   }
-  free(m->b);
-  free(m);
+  kfree(m->b);
+  kfree(m);
 }
 
-static HENT*
-phe_create(uint64_t h, void *k, size_t ks, void *v, size_t vs) {
-  HENT *e = malloc(sizeof(HENT));
+static inline HENT*
+phe_create(phm_int_t h, void *k, size_t ks, void *v, size_t vs) {
+  HENT *e = kmalloc(sizeof(HENT));
   if (!e) return NULL;
 #ifdef PICOHASHMAP_USE_COPY
-  e->k = malloc(ks);
+  e->k = kmalloc(ks);
   if (!e->k) {
-    free(e);
+    kfree(e);
     return NULL;
   }
   memcpy(e->k, k, ks);
-  e->v = malloc(vs);
+  e->v = kmalloc(vs);
   if (!e->v) {
-    free(e->k);
-    free(e->v);
-    free(e);
+    kfree(e->k);
+    kfree(e->v);
+    kfree(e);
     return NULL;
   }
   memcpy(e->v, v, vs);
@@ -151,7 +200,7 @@ phe_create(uint64_t h, void *k, size_t ks, void *v, size_t vs) {
 
 void*
 phm_put(PHMAP *m, void *k, size_t ks, void *v, size_t vs) {
-  uint64_t h = hash(k, ks);
+  phm_int_t h = hash(k, ks);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT **p = &(m->b[i]);
   while (1) {
@@ -163,7 +212,7 @@ phm_put(PHMAP *m, void *k, size_t ks, void *v, size_t vs) {
       phm_expand(m);
       return NULL;
     }
-    if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
+    if (phm_eq(cur->k, cur->h, k, h) || PHM_EQUALS(m, cur->k, k)) {
       void *old = cur->v;
       cur->v = v;
       return old;
@@ -175,11 +224,11 @@ phm_put(PHMAP *m, void *k, size_t ks, void *v, size_t vs) {
 
 void*
 phm_get(PHMAP *m, void *k, size_t ks) {
-  uint64_t h = hash(k, ks);
+  phm_int_t h = hash(k, ks);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT *e = m->b[i];
   while (e) {
-    if (phm_eq(e->k, e->h, k, h) || m->f(e->k, k)) return e->v;
+    if (phm_eq(e->k, e->h, k, h) || PHM_EQUALS(m, e->k, k)) return e->v;
     e = e->n;
   }
   return NULL;
@@ -193,7 +242,7 @@ phm_has_key(PHMAP* m, void* k, size_t ks) {
   HENT* cur;
   while (*p) {
     cur = *p;
-    if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k))
+    if (phm_eq(cur->k, cur->h, k, h) || PHM_EQUALS(m, cur->k, k))
       return 1;
     p = &cur->n;
   }
@@ -208,14 +257,14 @@ phm_delete(PHMAP* m, void* k, size_t ks) {
   HENT* cur;
   while (*p) {
     cur = *p;
-    if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
+    if (phm_eq(cur->k, cur->h, k, h) || PHM_EQUALS(m, cur->k, k)) {
       void* v = cur->v;
       *p = cur->n;
 #ifdef PICOHASHMAP_USE_COPY
-      free(cur->k);
-      free(cur->v);
+      kfree(cur->k);
+      kfree(cur->v);
 #endif
-      free(cur);
+      kfree(cur);
       m->s--;
       return v;
     }
