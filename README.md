@@ -12,16 +12,16 @@ int
 main() {
   PHMAP *m = phm_create(10, NULL);
 
-  phm_put(m, "foo", 3, "hello");
-  phm_put(m, "bar", 3, "world");
-  phm_put(m, "blah", 4, "picohashmap");
+  phm_put(m, PHM_CSTR("foo"),  PHM_CSTR("hello"));
+  phm_put(m, PHM_CSTR("bar"),  PHM_CSTR("world"));
+  phm_put(m, PHM_CSTR("blah"), PHM_CSTR("picohashmap"));
 
-  void *e = phm_get(m, "BAR", 3); // should be "world"
+  void *e = phm_get(m, PHM_CSTR("BAR")); // should be "world"
   puts((char*)e);
 
-  phm_delete(m, "bar", 3); // return "picomap"
+  phm_delete(m, PHM_CSTR("bar")); // return "picomap"
 
-  if (phm_has_key(m, "BAR", 3)) {
+  if (!phm_has_key(m, PHM_CSTR("BAR"))) {
     puts("bar is deleted");
   }
 }
@@ -42,11 +42,11 @@ int
 main() {
   PHMAP *m = phm_create(10, equals);
 
-  phm_put(m, "foo", 3, "hello");
-  phm_put(m, "bar", 3, "world");
-  phm_put(m, "blah", 4, "picohashmap");
+  phm_put(m, PHM_CSTR("foo"),  PHM_CSTR("hello"));
+  phm_put(m, PHM_CSTR("bar"),  PHM_CSTR("world"));
+  phm_put(m, PHM_CSTR("blah"), PHM_CSTR("picohashmap"));
 
-  void *e = phm_get(m, "BAR", 3); // should be "world"
+  void *e = phm_get(m, PHM_CSTR("BAR")); // should be "world"
   puts((char*)e);
 }
 ```
@@ -69,7 +69,7 @@ main(int argc, char* argv[]) {
 
   time_t begin = clock();
   for (i = 0; i < 10000000u; i++) {
-    phm_put(m, &i, sizeof(i), (void*)(intptr_t)i);
+    phm_put(m, &i, sizeof(i), &i, sizeof(i));
   }
 
   time_t end = clock();
