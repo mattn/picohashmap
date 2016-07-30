@@ -102,7 +102,7 @@ picohashmap put: 5.950000 [sec]
 picohashmap get: 1.126000 [sec]
 ```
 
-Below is benchmark that works as same as above.
+Below is benchmark that works as same as above in C++ unordered_map.
 
 ```cpp
 #include <iostream>
@@ -140,6 +140,53 @@ main(int argc, char* argv[]) {
 ```
 C++ stl put: 5.126669 [sec]
 C++ stl get: 1.272198 [sec]
+```
+
+And klib khash
+
+```c
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
+#include "khash.h"
+
+KHASH_MAP_INIT_INT(v, int);
+
+int
+main(int argc, char* argv[]) {
+  int r, i;
+  khash_t(v)* h = kh_init(v);
+
+  time_t begin = clock();
+  for (i = 0; i < 10000000u; i++) {
+    khint_t k = kh_put(v, h, i, &r);
+    kh_value(h, k) = i;
+  }
+  time_t end = clock();
+  float phe_elapsed = (float)(end - begin) / CLOCKS_PER_SEC;
+  printf("klib hash put: %f [sec]\n", phe_elapsed);
+
+  begin = clock();
+  for (i = 0; i < 10000000u; i++) {
+    khint_t k = kh_get(v, h, i);
+    if (k != kh_end(h))
+      kh_value(h, k);
+    else
+      abort();
+  }
+  end = clock();
+  phe_elapsed = (float)(end - begin) / CLOCKS_PER_SEC;
+  printf("klib hash get: %f [sec]\n", phe_elapsed);
+
+  return 0;
+}
+```
+
+Well, khash is too fast. It's a monster.
+
+```
+klib hash put: 0.252785 [sec]
+klib hash get: 0.036985 [sec]
 ```
 
 Intel Core i5
