@@ -16,12 +16,12 @@ main() {
   phm_put(m, PHM_CSTR("bar"),  PHM_CSTR("world"));
   phm_put(m, PHM_CSTR("blah"), PHM_CSTR("picohashmap"));
 
-  void *e = phm_get(m, PHM_CSTR("BAR")); // should be "world"
+  void *e = phm_get(m, PHM_CSTR("bar")); // should be "world"
   puts((char*)e);
 
   phm_delete(m, PHM_CSTR("bar")); // return "picomap"
 
-  if (!phm_has_key(m, PHM_CSTR("BAR"))) {
+  if (!phm_has_key(m, PHM_CSTR("bar"))) {
     puts("bar is deleted");
   }
 }
