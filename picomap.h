@@ -55,6 +55,11 @@ phm_eq(void* ka, uint64_t ha, void* kb, uint64_t hb) {
   return ha == hb;
 }
 
+int
+phm_size(PHMAP *m) {
+  return m->s;
+}
+
 static void
 phm_expand(PHMAP* m) {
   if (m->s <= (m->c * 3 / 4)) return;

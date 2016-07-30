@@ -37,6 +37,8 @@ main() {
 
   ok(!phm_has_key(m, "blah", 4));
 
+  ok(phm_size(m) == 2);
+
   TEST_NULL("blah");
 
 #undef TEST
