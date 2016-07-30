@@ -7,10 +7,14 @@ test: test-core
 	./test-core
 
 test-core: picohashmap.h test.c picotest/picotest.c picotest/picotest.h
-	$(CC) -g -Wall test.c picotest/picotest.c -o $@
+	$(CC) -Wall test.c picotest/picotest.c -o $@
 
 clean:
 	rm -f test-core
+
+benchmark:
+	$(CC) -Wall benchmark.c -o benchmark
+	./benchmark
 
 install:
 	install -d $(DESTDIR)$(includedir)
