@@ -1,5 +1,7 @@
 # picohashmap
 
+[![Build Status](https://travis-ci.org/mattn/picomap.svg?branch=master)](https://travis-ci.org/mattn/picomap)
+
 FNV-1 hashmap
 
 ## Usage
