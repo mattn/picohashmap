@@ -10,6 +10,10 @@ extern "C" {
 #include <stdlib.h>
 #include <memory.h>
 
+#define PHM_MEM(k) k, (sizeof(k))
+#define PHM_CSTR(k) k, (sizeof(k))
+#define PHM_STR(k) k, (strlen(k))
+
 typedef int (*f_phm_compare)(void*, void*);
 typedef void (*f_phm_each)(void*, void*);
 
@@ -105,8 +109,9 @@ phm_free(PHMAP* m) {
     HENT *e = m->b[i];
     while (e) {
       HENT *n = e->n;
-#ifdef PICOHASHMAP_COPYKEYS
+#ifdef PICOHASHMAP_USE_COPY
       free(e->k);
+      free(e->v);
 #endif
       free(e);
       e = n;
@@ -117,34 +122,42 @@ phm_free(PHMAP* m) {
 }
 
 static HENT*
-phe_create(void *k, size_t s, uint64_t h, void *v) {
+phe_create(uint64_t h, void *k, size_t ks, void *v, size_t vs) {
   HENT *e = malloc(sizeof(HENT));
   if (!e) return NULL;
-#ifdef PICOHASHMAP_COPYKEYS
-  e->k = malloc(s);
+#ifdef PICOHASHMAP_USE_COPY
+  e->k = malloc(ks);
   if (!e->k) {
     free(e);
     return NULL;
   }
-  memcpy(e->k, k, s);
+  memcpy(e->k, k, ks);
+  e->v = malloc(vs);
+  if (!e->v) {
+    free(e->k);
+    free(e->v);
+    free(e);
+    return NULL;
+  }
+  memcpy(e->v, v, vs);
 #else
   e->k = k;
+  e->v = v;
 #endif
   e->h = h;
-  e->v = v;
   e->n = NULL;
   return e;
 }
 
 void*
-phm_put(PHMAP *m, void *k, size_t s, void *v) {
-  uint64_t h = hash(k, s);
+phm_put(PHMAP *m, void *k, size_t ks, void *v, size_t vs) {
+  uint64_t h = hash(k, ks);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT **p = &(m->b[i]);
   while (1) {
     HENT *cur = *p;
     if (!cur) {
-      *p = phe_create(k, s, h, v);
+      *p = phe_create(h, k, ks, v, vs);
       if (!*p) return NULL;
       m->s++;
       phm_expand(m);
@@ -161,8 +174,8 @@ phm_put(PHMAP *m, void *k, size_t s, void *v) {
 }
 
 void*
-phm_get(PHMAP *m, void *k, size_t s) {
-  uint64_t h = hash(k, s);
+phm_get(PHMAP *m, void *k, size_t ks) {
+  uint64_t h = hash(k, ks);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT *e = m->b[i];
   while (e) {
@@ -173,8 +186,8 @@ phm_get(PHMAP *m, void *k, size_t s) {
 }
 
 int
-phm_has_key(PHMAP* m, void* k, size_t s) {
-  int h = hash(k, s);
+phm_has_key(PHMAP* m, void* k, size_t ks) {
+  int h = hash(k, ks);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT** p = &(m->b[i]);
   HENT* cur;
@@ -188,8 +201,8 @@ phm_has_key(PHMAP* m, void* k, size_t s) {
 }
 
 void*
-phm_delete(PHMAP* m, void* k, size_t s) {
-  int h = hash(k, s);
+phm_delete(PHMAP* m, void* k, size_t ks) {
+  int h = hash(k, ks);
   size_t i = ((size_t) h) & (m->c - 1);
   HENT** p = &(m->b[i]);
   HENT* cur;
@@ -198,8 +211,9 @@ phm_delete(PHMAP* m, void* k, size_t s) {
     if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
       void* v = cur->v;
       *p = cur->n;
-#ifdef PICOHASHMAP_COPYKEYS
-      free(e->k);
+#ifdef PICOHASHMAP_USE_COPY
+      free(cur->k);
+      free(cur->v);
 #endif
       free(cur);
       m->s--;

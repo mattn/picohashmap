@@ -5,14 +5,53 @@ FNV-1 hashmap
 ## Usage
 
 ```c
-PHMAP *m = phm_create(10, NULL);
+#include "picohashmap.h"
+#include <string.h>
 
-phm_put(m, "foo", 3, "hello");
-phm_put(m, "bar", 3, "world");
-phm_put(m, "blah", 4, "picohashmap");
+int
+main() {
+  PHMAP *m = phm_create(10, NULL);
 
-void *e = phm_get(m, "bar", 3); // should be "world"
+  phm_put(m, "foo", 3, "hello");
+  phm_put(m, "bar", 3, "world");
+  phm_put(m, "blah", 4, "picohashmap");
+
+  void *e = phm_get(m, "BAR", 3); // should be "world"
+  puts((char*)e);
+
+  phm_delete(m, "bar", 3); // return "picomap"
+
+  if (phm_has_key(m, "BAR", 3)) {
+    puts("bar is deleted");
+  }
+}
 ```
+
+If you want to make case-insensitive keys, specify compare function into `phm_create`.
+
+```c
+#include "picohashmap.h"
+#include <string.h>
+
+int
+equals(void *a, void *b) {
+  return strcasecmp((char*)a, (char*)b) == 0;
+}
+
+int
+main() {
+  PHMAP *m = phm_create(10, equals);
+
+  phm_put(m, "foo", 3, "hello");
+  phm_put(m, "bar", 3, "world");
+  phm_put(m, "blah", 4, "picohashmap");
+
+  void *e = phm_get(m, "BAR", 3); // should be "world"
+  puts((char*)e);
+}
+```
+
+In default, picohashmap doesn't make a copy of keys and values. So you should case of the life time of the memory. For example, using strdup for the key and value both. If you want to use copying, use `-DPICOHASHMAP_USE_COPY`.
 
 ## Benchmark
 
@@ -41,17 +80,16 @@ main(int argc, char* argv[]) {
 ```
 
 ```
-picohashmap: 7.779000 [sec]
-```
-
-Without `-DPICOHASHMAP_COPYKEYS`
-
-```
-picohashmap: 4.171000 [sec]
+picohashmap: 3.424000 [sec]
 ```
 
 Intel Core i5
 
+With `-DPICOHASHMAP_USECOPY`
+
+```
+picohashmap: 8.936000 [sec]
+```
 
 ## License
 

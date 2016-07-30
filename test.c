@@ -7,16 +7,16 @@ int
 main() {
   PHMAP *m = phm_create(10, NULL);
 
-  phm_put(m, "foo", 3, "hello");
-  phm_put(m, "bar", 3, "world");
-  phm_put(m, "blah", 4, "picohashmap");
+  phm_put(m, PHM_CSTR("foo"),  PHM_CSTR("hello"));
+  phm_put(m, PHM_CSTR("bar"),  PHM_CSTR("world"));
+  phm_put(m, PHM_CSTR("blah"), PHM_CSTR("picohashmap"));
 
 #define TEST_NULL(expr) do { \
     ok(!phm_get(m, expr, strlen(expr))); \
   } while (0);
 
 #define TEST(expr, expected) do { \
-    void *e = phm_get(m, expr, strlen(expr)); \
+    void *e = phm_get(m, PHM_CSTR(expr)); \
     ok(e && !strcmp((char*)e, expected)); \
   } while (0);
 
@@ -45,18 +45,18 @@ main() {
   int k;
   m = phm_create(10, NULL);
 
-  k = 1; phm_put(m, &k, sizeof(k), "new");
-  k = 2; phm_put(m, &k, sizeof(k), "york");
-  k = 3; phm_put(m, &k, sizeof(k), "city");
+  k = 1; phm_put(m, PHM_MEM(&k), PHM_CSTR("new"));
+  k = 2; phm_put(m, PHM_MEM(&k), PHM_CSTR("york"));
+  k = 3; phm_put(m, PHM_MEM(&k), PHM_CSTR("city"));
 
 #define TEST_NULL(expr) do { \
     k = expr; \
-    ok(!phm_get(m, &k, sizeof(k))); \
+    ok(!phm_get(m, PHM_MEM(&k))); \
   } while (0);
 
 #define TEST(expr, expected) do { \
     k = expr; \
-    void *e = phm_get(m, &k, sizeof(k)); \
+    void *e = phm_get(m, PHM_MEM(&k)); \
     ok(e && !strcmp((char*)e, expected)); \
   } while (0);
 
