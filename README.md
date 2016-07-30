@@ -40,9 +40,18 @@ main(int argc, char* argv[]) {
 }
 ```
 
+```
 picomap: 7.779000 [sec]
+```
+
+Without `-DPICOMAP_COPYKEYS`
+
+```
+picomap: 4.171000 [sec]
+```
 
 Intel Core i5
+
 
 ## License
 

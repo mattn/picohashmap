@@ -105,7 +105,9 @@ phm_free(PHMAP* m) {
     HENT *e = m->b[i];
     while (e) {
       HENT *n = e->n;
+#ifdef PICOMAP_COPYKEYS
       free(e->k);
+#endif
       free(e);
       e = n;
     }
@@ -118,12 +120,16 @@ static HENT*
 phe_create(void *k, size_t s, uint64_t h, void *v) {
   HENT *e = malloc(sizeof(HENT));
   if (!e) return NULL;
+#ifdef PICOMAP_COPYKEYS
   e->k = malloc(s);
   if (!e->k) {
     free(e);
     return NULL;
   }
   memcpy(e->k, k, s);
+#else
+  e->k = k;
+#endif
   e->h = h;
   e->v = v;
   e->n = NULL;
@@ -192,6 +198,9 @@ phm_delete(PHMAP* m, void* k, size_t s) {
     if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
       void* v = cur->v;
       *p = cur->n;
+#ifdef PICOMAP_COPYKEYS
+      free(e->k);
+#endif
       free(cur);
       m->s--;
       return v;
