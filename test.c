@@ -69,6 +69,8 @@ main() {
 #undef TEST_NULL
 
   phm_free(m);
+
+  return 0;
 }
 
 /* vim:set et sw=2 cino=>2,\:0: */
