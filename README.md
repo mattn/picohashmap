@@ -86,8 +86,6 @@ main(int argc, char* argv[]) {
   printf("picohashmap get: %f [sec]\n", phe_elapsed);
   return 0;
 }
-
-/* vim:set et sw=2 cino=>2,\:0: */
 ```
 
 ```
@@ -100,6 +98,46 @@ With `-DPICOHASHMAP_USECOPY`
 ```
 picohashmap put: 5.950000 [sec]
 picohashmap get: 1.126000 [sec]
+```
+
+Below is benchmark that works as same as above.
+
+```cpp
+#include <iostream>
+#include <string>
+#include <map>
+#include <ctime>
+
+int
+main(int argc, char* argv[]) {
+  int i;
+
+  std::map<int, int> m;
+
+  time_t begin = clock();
+  for (i = 0; i < 10000000u; i++) {
+    m[i] = i;
+  }
+  time_t end = clock();
+
+  float phe_elapsed = (float)(end - begin) / CLOCKS_PER_SEC;
+  printf("C++ stl put: %f [sec]\n", phe_elapsed);
+
+  begin = clock();
+  for (i = 0; i < 10000000u; i++) {
+    int v = m[i];
+  }
+  end = clock();
+
+  phe_elapsed = (float)(end - begin) / CLOCKS_PER_SEC;
+  printf("C++ stl get: %f [sec]\n", phe_elapsed);
+  return 0;
+}
+```
+
+```
+C++ stl put: 11.642000 [sec]
+C++ stl get: 5.961000 [sec]
 ```
 
 Intel Core i5
