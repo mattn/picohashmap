@@ -95,14 +95,14 @@ picohashmap put: 2.781000 [sec]
 picohashmap get: 1.103000 [sec]
 ```
 
-Intel Core i5
-
 With `-DPICOHASHMAP_USECOPY`
 
 ```
 picohashmap put: 5.950000 [sec]
 picohashmap get: 1.126000 [sec]
 ```
+
+Intel Core i5
 
 ## License
 
