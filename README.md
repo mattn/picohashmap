@@ -12,7 +12,7 @@ FNV-1 hashmap
 
 int
 main() {
-  PHMAP *m = phm_create(10, NULL);
+  PHMAP *m = phm_create(10);
 
   phm_put(m, PHM_CSTR("foo"),  PHM_CSTR("hello"));
   phm_put(m, PHM_CSTR("bar"),  PHM_CSTR("world"));
@@ -67,7 +67,7 @@ int
 main(int argc, char* argv[]) {
   int i;
 
-  PHMAP *m = phm_create(10, NULL);
+  PHMAP *m = phm_create(10);
 
   time_t begin = clock();
   for (i = 0; i < 10000000u; i++) {
@@ -107,14 +107,14 @@ Below is benchmark that works as same as above.
 ```cpp
 #include <iostream>
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <ctime>
 
 int
 main(int argc, char* argv[]) {
   int i;
 
-  std::map<int, int> m;
+  std::unordered_map<int, int> m;
 
   time_t begin = clock();
   for (i = 0; i < 10000000u; i++) {
@@ -138,8 +138,8 @@ main(int argc, char* argv[]) {
 ```
 
 ```
-C++ stl put: 11.642000 [sec]
-C++ stl get: 5.961000 [sec]
+C++ stl put: 5.126669 [sec]
+C++ stl get: 1.272198 [sec]
 ```
 
 Intel Core i5
