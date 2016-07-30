@@ -3,10 +3,6 @@
 
 #include <string.h>
 
-typedef struct {
-  int v;
-} key_int;
-
 int
 main() {
   PHMAP *m = phm_create(10, NULL);
@@ -46,21 +42,21 @@ main() {
 
   phm_free(m);
 
-  key_int k;
+  int k;
   m = phm_create(10, NULL);
 
-  k.v = 1; phm_put(m, &k.v, sizeof(k.v), "new");
-  k.v = 2; phm_put(m, &k.v, sizeof(k.v), "york");
-  k.v = 3; phm_put(m, &k.v, sizeof(k.v), "city");
+  k = 1; phm_put(m, &k, sizeof(k), "new");
+  k = 2; phm_put(m, &k, sizeof(k), "york");
+  k = 3; phm_put(m, &k, sizeof(k), "city");
 
 #define TEST_NULL(expr) do { \
-    key_int k = {.v = expr}; \
-    ok(!phm_get(m, &k.v, sizeof(k.v))); \
+    k = expr; \
+    ok(!phm_get(m, &k, sizeof(k))); \
   } while (0);
 
 #define TEST(expr, expected) do { \
-    key_int k = {.v = expr}; \
-    void *e = phm_get(m, &k.v, sizeof(k.v)); \
+    k = expr; \
+    void *e = phm_get(m, &k, sizeof(k)); \
     ok(e && !strcmp((char*)e, expected)); \
   } while (0);
 
