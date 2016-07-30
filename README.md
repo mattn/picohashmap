@@ -71,16 +71,28 @@ main(int argc, char* argv[]) {
   for (i = 0; i < 10000000u; i++) {
     phm_put(m, &i, sizeof(i), &i, sizeof(i));
   }
-
   time_t end = clock();
+
   float phe_elapsed = (float)(end - begin) / CLOCKS_PER_SEC;
-  printf("picohashmap: %f [sec]\n", phe_elapsed);
+  printf("picohashmap put: %f [sec]\n", phe_elapsed);
+
+  begin = clock();
+  for (i = 0; i < 10000000u; i++) {
+    phm_get(m, &i, sizeof(i));
+  }
+  end = clock();
+
+  phe_elapsed = (float)(end - begin) / CLOCKS_PER_SEC;
+  printf("picohashmap get: %f [sec]\n", phe_elapsed);
   return 0;
 }
+
+/* vim:set et sw=2 cino=>2,\:0: */
 ```
 
 ```
-picohashmap: 3.424000 [sec]
+picohashmap put: 2.781000 [sec]
+picohashmap get: 1.103000 [sec]
 ```
 
 Intel Core i5
@@ -88,7 +100,8 @@ Intel Core i5
 With `-DPICOHASHMAP_USECOPY`
 
 ```
-picohashmap: 8.936000 [sec]
+picohashmap put: 5.950000 [sec]
+picohashmap get: 1.126000 [sec]
 ```
 
 ## License
