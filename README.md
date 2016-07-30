@@ -5,8 +5,8 @@ FNV-1 hashmap
 ## Usage
 
 ```c
-#include "picohashmap.h"
 #include <string.h>
+#include "picohashmap.h"
 
 int
 main() {
@@ -30,8 +30,8 @@ main() {
 If you want to make case-insensitive keys, specify compare function into `phm_create`.
 
 ```c
-#include "picohashmap.h"
 #include <string.h>
+#include "picohashmap.h"
 
 int
 equals(void *a, void *b) {
