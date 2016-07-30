@@ -51,7 +51,7 @@ main() {
 }
 ```
 
-In default, picohashmap doesn't make a copy of keys and values. So you should case of the life time of the memory. For example, using strdup for the key and value both. If you want to use copying, use `-DPICOHASHMAP_USE_COPY`.
+In default, picohashmap doesn't make a copy of keys and values. So you should care of a life time for the memory of the key and value. For example, using strdup for the key and value both. If you want to use copying, use `-DPICOHASHMAP_USE_COPY`.
 
 ## Benchmark
 
