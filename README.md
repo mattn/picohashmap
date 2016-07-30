@@ -1,6 +1,6 @@
 # picohashmap
 
-[![Build Status](https://travis-ci.org/mattn/picomap.svg?branch=master)](https://travis-ci.org/mattn/picomap)
+[![Build Status](https://travis-ci.org/mattn/picohashmap.svg?branch=master)](https://travis-ci.org/mattn/picohashmap)
 
 FNV-1 hashmap
 
@@ -21,7 +21,7 @@ main() {
   void *e = phm_get(m, PHM_CSTR("bar")); // should be "world"
   puts((char*)e);
 
-  phm_delete(m, PHM_CSTR("bar")); // return "picomap"
+  phm_delete(m, PHM_CSTR("bar")); // return "picohashmap"
 
   if (!phm_has_key(m, PHM_CSTR("bar"))) {
     puts("bar is deleted");
