@@ -1,4 +1,4 @@
-# picomap
+# picohashmap
 
 FNV-1 hashmap
 
@@ -9,7 +9,7 @@ PHMAP *m = phm_create(10, NULL);
 
 phm_put(m, "foo", 3, "hello");
 phm_put(m, "bar", 3, "world");
-phm_put(m, "blah", 4, "picomap");
+phm_put(m, "blah", 4, "picohashmap");
 
 void *e = phm_get(m, "bar", 3); // should be "world"
 ```
@@ -20,7 +20,7 @@ void *e = phm_get(m, "bar", 3); // should be "world"
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "picomap.h"
+#include "picohashmap.h"
 
 int
 main(int argc, char* argv[]) {
@@ -35,19 +35,19 @@ main(int argc, char* argv[]) {
 
   time_t end = clock();
   float phe_elapsed = (float)(end - begin) / CLOCKS_PER_SEC;
-  printf("picomap: %f [sec]\n", phe_elapsed);
+  printf("picohashmap: %f [sec]\n", phe_elapsed);
   return 0;
 }
 ```
 
 ```
-picomap: 7.779000 [sec]
+picohashmap: 7.779000 [sec]
 ```
 
-Without `-DPICOMAP_COPYKEYS`
+Without `-DPICOHASHMAP_COPYKEYS`
 
 ```
-picomap: 4.171000 [sec]
+picohashmap: 4.171000 [sec]
 ```
 
 Intel Core i5

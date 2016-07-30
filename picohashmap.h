@@ -1,5 +1,5 @@
-#ifndef picomap_h
-#define picomap_h
+#ifndef picohashmap_h
+#define picohashmap_h
 
 #ifdef __cplusplus
 extern "C" {
@@ -105,7 +105,7 @@ phm_free(PHMAP* m) {
     HENT *e = m->b[i];
     while (e) {
       HENT *n = e->n;
-#ifdef PICOMAP_COPYKEYS
+#ifdef PICOHASHMAP_COPYKEYS
       free(e->k);
 #endif
       free(e);
@@ -120,7 +120,7 @@ static HENT*
 phe_create(void *k, size_t s, uint64_t h, void *v) {
   HENT *e = malloc(sizeof(HENT));
   if (!e) return NULL;
-#ifdef PICOMAP_COPYKEYS
+#ifdef PICOHASHMAP_COPYKEYS
   e->k = malloc(s);
   if (!e->k) {
     free(e);
@@ -198,7 +198,7 @@ phm_delete(PHMAP* m, void* k, size_t s) {
     if (phm_eq(cur->k, cur->h, k, h) || m->f(cur->k, k)) {
       void* v = cur->v;
       *p = cur->n;
-#ifdef PICOMAP_COPYKEYS
+#ifdef PICOHASHMAP_COPYKEYS
       free(e->k);
 #endif
       free(cur);
@@ -227,6 +227,6 @@ phm_each(PHMAP* m, f_phm_each f) {
 }
 #endif
 
-#endif /* picomap_h */
+#endif /* picohashmap_h */
 
 /* vim:set et sw=2 cino=>2,\:0: */

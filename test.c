@@ -1,4 +1,4 @@
-#include "picomap.h"
+#include "picohashmap.h"
 #include "picotest/picotest.h"
 
 #include <string.h>
@@ -9,7 +9,7 @@ main() {
 
   phm_put(m, "foo", 3, "hello");
   phm_put(m, "bar", 3, "world");
-  phm_put(m, "blah", 4, "picomap");
+  phm_put(m, "blah", 4, "picohashmap");
 
 #define TEST_NULL(expr) do { \
     ok(!phm_get(m, expr, strlen(expr))); \
@@ -22,7 +22,7 @@ main() {
 
   TEST("bar", "world");
   TEST("foo", "hello");
-  TEST("blah", "picomap");
+  TEST("blah", "picohashmap");
   TEST_NULL("1bar");
   TEST_NULL("fo2o");
   TEST_NULL("bla3h");

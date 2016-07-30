@@ -6,7 +6,7 @@ check: test
 test: test-core
 	./test-core
 
-test-core: picomap.h test.c picotest/picotest.c picotest/picotest.h
+test-core: picohashmap.h test.c picotest/picotest.c picotest/picotest.h
 	$(CC) -g -Wall test.c picotest/picotest.c -o $@
 
 clean:
@@ -14,7 +14,7 @@ clean:
 
 install:
 	install -d $(DESTDIR)$(includedir)
-	install -p -m 0644 picomap.h $(DESTDIR)$(includedir)
+	install -p -m 0644 picohashmap.h $(DESTDIR)$(includedir)
 
 uninstall:
 	rm -f $(DESTDIR)$(includedir)/picojson.h
