@@ -27,11 +27,11 @@ main() {
   TEST_NULL("fo2o");
   TEST_NULL("bla3h");
 
-  ok(phm_has_key(m, "blah", 4));
+  ok(phm_has_key(m, PHM_CSTR("blah")));
 
-  phm_delete(m, "blah", 4);
+  phm_delete(m, PHM_CSTR("blah"));
 
-  ok(!phm_has_key(m, "blah", 4));
+  ok(!phm_has_key(m, PHM_CSTR("blah")));
 
   ok(phm_size(m) == 2);
 
